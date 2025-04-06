@@ -1,8 +1,6 @@
 package main
 
 import (
-    //"fmt"
-    //"log"
 
     "github.com/gdamore/tcell/v2"
     "github.com/rivo/tview"
@@ -30,39 +28,46 @@ var text = tview.NewTextView().
 
 
 func main() {
-    packagesList.SetSelectedFunc(func(index int, name string, second_name string, shortcut rune) {
-        setConcatText(&packages[index])
-    })
+    packagesList.SetSelectedFunc(
+        func(index int, name string, second_name string, shortcut rune) {
+            setConcatText(&packages[index])
+        })
 
     flex.SetDirection(tview.FlexRow).
         AddItem(tview.NewFlex().
             AddItem(packagesList, 0, 1, true).
-            AddItem(packageText, 0, 4, false), 0, 6, false).
-        AddItem(text, 0, 1, false)
+            AddItem(packageText, 0, 4, false), 0, 6, false) //.
+        //AddItem(text, 0, 1, false)
 
     flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
         if event.Rune() == 113 {
             app.Stop()
-        } else if event.Rune() == 97 {
-            form.Clear(true)
-            addPackageForm()
-            pages.SwitchToPage("Search Package")
         }
+
         return event
     })
 
     pages.AddPage("Menu", flex, true, true)
     pages.AddPage("Search Package", form, true, false)
 
-    if err := app.SetRoot(pages, true).EnableMouse(true).Run(); err != nil {
+    form.Clear(true)
+    addPackageForm()
+    pages.SwitchToPage("Search Package")
+
+
+    if err := app.SetRoot(pages, true).EnableMouse(false).Run(); err != nil {
         panic(err)
     }
 }
 
+
 func addPackageList() {
+    // This would call to something like xlocate
     packagesList.Clear()
     for index, packageObj := range packages {
-        packagesList.AddItem(packageObj.packageName+" "+packageObj.desc, " ", rune(49+index), nil)
+        packagesList.AddItem(
+            packageObj.packageName+" = "+packageObj.desc, 
+            " ", rune(49+index), nil).SetBorder(true)
     }
 }
 
@@ -86,6 +91,7 @@ func addPackageForm() *tview.Form {
 
     return form
 }
+
 
 func setConcatText(packageObj *Package) {
     packageText.Clear()
