@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func searchPkg(pkgName string) map[string]string {
+func SearchPkg(pkgName string) map[string]string {
     // Pass in package name to search for
     // Pull proper name and description.
     re := regexp.MustCompile("[ ]{2,}\\w")
@@ -31,7 +31,7 @@ func searchPkg(pkgName string) map[string]string {
    return pkgmap
 }
 
-func installPkg(pkgName string) string {
+func InstallPkg(pkgName string) string {
     // Update the repos
     // xbps-install -Su
     return "a pkg yay!"
