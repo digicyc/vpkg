@@ -12,8 +12,6 @@ type Package struct {
     installed     bool
 }
 
-const fileName = "sqlite.db"
-
 var packages = make([]Package, 0)
 
 var pages = tview.NewPages()
@@ -22,12 +20,14 @@ var app = tview.NewApplication()
 var form = tview.NewForm()
 var packagesList = tview.NewList().ShowSecondaryText(false)
 var flex = tview.NewFlex()
+
 var text = tview.NewTextView().
     SetTextColor(tcell.ColorGreen).
-    SetText("(a) to Add a new Package. \n(q) to quit")
+    SetText("VPKG is a VoidLinux Package Manager. \n(q) to quit")
 
 
 func main() {
+    // Packages installed in this session.
     packagesList.SetSelectedFunc(
         func(index int, name string, second_name string, shortcut rune) {
             setConcatText(&packages[index])
