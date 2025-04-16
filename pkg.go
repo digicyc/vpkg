@@ -7,12 +7,17 @@ import (
 	"strings"
 )
 
+/*
+ * Search for a package passed into search field.
+ * TODO: Use this or xlocate?
+ */
 func SearchPkg(pkgName string) map[string]string {
-    // Pass in package name to search for
-    // Pull proper name and description.
-    re := regexp.MustCompile("[ ]{2,}\\w")
-    cmdString := "xbps-query -Rs " + pkgName
-    cmd := exec.Command(cmdString)
+    // Key - pkgname Value - Description
+    re := regexp.MustCompile("[ ]{3,}\\w+")
+    cmdString := "/usr/bin/xbps-query"
+    arg1 := "-Rs"
+    cmd := exec.Command(cmdString, arg1, pkgName)
+
     pkgmap := map[string]string{}
     stdout, err := cmd.Output()
     if err != nil {
@@ -20,7 +25,7 @@ func SearchPkg(pkgName string) map[string]string {
     }
 
     res := string(stdout)
-    res_list := strings.Split(res, "[-]")
+    res_list := strings.Split(res, "[-] ")
     for i := range res_list {
         pkginfo := re.Split(res_list[i], -1)
         if len(pkginfo) > 1 {
@@ -31,8 +36,31 @@ func SearchPkg(pkgName string) map[string]string {
    return pkgmap
 }
 
+/*
+ * Install our selected package.
+ */
 func InstallPkg(pkgName string) string {
-    // Update the repos
-    // xbps-install -Su
-    return "a pkg yay!"
+    cmdString := "/usr/bin/xbps-install"
+    cmd := exec.Command(cmdString, pkgName)
+    stdout, err := cmd.Output()
+    if err != nil {
+        log.Fatal(err)
+    }
+    return string(stdout)
 }
+
+/*
+ * Run this to update our package repos.
+ */
+func UpdateXBPS() string {
+    cmdString := "/usr/bin/xbps-install"
+    arg1 := "-Su"
+    cmd := exec.Command(cmdString, arg1)
+    stdout, err := cmd.Output()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    return string(stdout)
+}
+
