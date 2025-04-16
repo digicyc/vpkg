@@ -1,6 +1,7 @@
 package main
 
 import (
+    "log"
 
     "github.com/gdamore/tcell/v2"
     "github.com/rivo/tview"
@@ -14,16 +15,18 @@ type Package struct {
 
 var packages = make([]Package, 0)
 
-var pages = tview.NewPages()
-var packageText = tview.NewTextView()
 var app = tview.NewApplication()
+var pages = tview.NewPages()
+
+var packageText = tview.NewTextView()
 var form = tview.NewForm()
 var packagesList = tview.NewList().ShowSecondaryText(false)
 var flex = tview.NewFlex()
 
+// Info Grid
 var text = tview.NewTextView().
     SetTextColor(tcell.ColorGreen).
-    SetText("VPKG is a VoidLinux Package Manager. \n(q) to quit")
+        SetText("VPKG is a VoidLinux Package Manager. \n(q) to quit\n(s) to Search")
 
 
 func main() {
@@ -35,13 +38,19 @@ func main() {
 
     flex.SetDirection(tview.FlexRow).
         AddItem(tview.NewFlex().
-            AddItem(packagesList, 0, 1, true).
-            AddItem(packageText, 0, 4, false), 0, 6, false) //.
-        //AddItem(text, 0, 1, false)
+            AddItem(packageText, 0, 1, true).
+            AddItem(packagesList, 0, 4, false), 0, 6, false).
+        AddItem(text, 0, 1, false)
 
     flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
         if event.Rune() == 113 {
             app.Stop()
+        } else if event.Rune() == 115 {
+            // Reset Search
+            log.Output(1, "Reset Search.")
+            form.Clear(true)
+            addPackageForm()
+            pages.SwitchToPage("Search Package")
         }
 
         return event
@@ -61,13 +70,20 @@ func main() {
 }
 
 
-func addPackageList() {
+func addPackageList(pkgMap map[string]string) {
     // This would call to something like xlocate
     packagesList.Clear()
-    for index, packageObj := range packages {
+    count := 1
+    for key, val := range pkgMap {
+        packageObj := Package{}
+        packageObj.packageName = key
+        packageObj.desc = val
+        packages = append(packages, packageObj)
         packagesList.AddItem(
-            packageObj.packageName+" = "+packageObj.desc, 
-            " ", rune(49+index), nil).SetBorder(true)
+            //"["+key + "] = " + val, " ", rune(43), nil).
+            key, " ", rune(64+count), nil).
+        SetBorder(true)
+        count++
     }
 }
 
@@ -79,13 +95,11 @@ func addPackageForm() *tview.Form {
         packageObj.packageName = packageName
     })
 
-    form.AddCheckbox("Installed", false, func(installed bool) {
-        packageObj.installed = installed 
-    })
-
     form.AddButton("Search", func() {
+        // Appending to a list to display for now.
         packages = append(packages, packageObj)
-        addPackageList()
+        pkgMap := SearchPkg(packageObj.packageName)
+        addPackageList(pkgMap)
         pages.SwitchToPage("Menu")
     })
 
